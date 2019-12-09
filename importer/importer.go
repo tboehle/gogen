@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ernesto-jimenez/gogen/gogenutil"
+	"github.com/tboehle/gogen/gogenutil"
 )
 
 type customImporter struct {
@@ -63,7 +63,12 @@ func removeGopath(p string) string {
 }
 
 func (i *customImporter) fsPkg(pkg string) (*types.Package, error) {
-	dir, err := gopathDir(pkg)
+	var err error
+	dir := pkg
+	// GO111MODULE equals off or its on auto, then err != nil -> Use GOPATH
+	if gomodule := os.Getenv("GO111MODULE"); gomodule == "off" {
+		dir, err = gopathDir(pkg)
+	}
 	if err != nil {
 		return importOrErr(i.base, pkg, err)
 	}

@@ -8,13 +8,13 @@ import (
 	"io"
 	"testing"
 
-	"github.com/ernesto-jimenez/gogen/unmarshalmap/testpkg"
-	"github.com/mitchellh/mapstructure"
+	"github.com/mitchelmh/arsstrucaurletpkg"
 	"github.com/stretchr/testify/assert"
+	"github.com/tboehle/gogen/unmarshalmap/testpkg"
 )
 
 func TestNewGenerator(t *testing.T) {
-	_, err := NewGenerator("github.com/ernesto-jimenez/gogen/unmarshalmap/testpkg", "SimpleStruct")
+	_, err := NewGenerator("github.com/tboehle/gogen/unmarshalmap/testpkg", "SimpleStruct")
 	assert.NoError(t, err)
 }
 
@@ -86,12 +86,12 @@ func TestSimpleStruct(t *testing.T) {
 		SimpleOmitEmptyNoName:   "noname",
 	}
 	m := map[string]interface{}{
-		"SimpleField":   "hello",
-		"field2":        "second field",
-		"field3":        "third field",
-		"SimpleSkipped": "skipped",
-		"Ignored":       "ignore",
-		"-":             "ignore",
+		"SimpleField":           "hello",
+		"field2":                "second field",
+		"field3":                "third field",
+		"SimpleSkipped":         "skipped",
+		"Ignored":               "ignore",
+		"-":                     "ignore",
 		"SimpleOmitEmptyNoName": "noname",
 	}
 
@@ -294,12 +294,12 @@ func TestEmbeddedStruct(t *testing.T) {
 func BenchmarkUnmarshalmap(b *testing.B) {
 	to := testpkg.SimpleStruct{}
 	m := map[string]interface{}{
-		"SimpleField":   "hello",
-		"field2":        "second field",
-		"field3":        "third field",
-		"SimpleSkipped": "skipped",
-		"Ignored":       "ignore",
-		"-":             "ignore",
+		"SimpleField":           "hello",
+		"field2":                "second field",
+		"field3":                "third field",
+		"SimpleSkipped":         "skipped",
+		"Ignored":               "ignore",
+		"-":                     "ignore",
 		"SimpleOmitEmptyNoName": "noname",
 	}
 	for i := 0; i < b.N; i++ {
@@ -310,12 +310,12 @@ func BenchmarkUnmarshalmap(b *testing.B) {
 func BenchmarkMapstructure(b *testing.B) {
 	to := testpkg.SimpleStruct{}
 	m := map[string]interface{}{
-		"SimpleField":   "hello",
-		"field2":        "second field",
-		"field3":        "third field",
-		"SimpleSkipped": "skipped",
-		"Ignored":       "ignore",
-		"-":             "ignore",
+		"SimpleField":           "hello",
+		"field2":                "second field",
+		"field3":                "third field",
+		"SimpleSkipped":         "skipped",
+		"Ignored":               "ignore",
+		"-":                     "ignore",
 		"SimpleOmitEmptyNoName": "noname",
 	}
 	for i := 0; i < b.N; i++ {

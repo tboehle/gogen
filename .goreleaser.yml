@@ -1,0 +1,24 @@
+project_name: 'github.com/tboehle/gogen'
+archives:
+  - id: main
+    wrap_in_directory: true
+    files:
+      - 'README.md'
+builds:
+  - main: './cmd/gounmarshalmap'
+    binary: 'gounmarshalmap'
+    goarch:
+      - '386'
+      - 'amd64'
+    goos:
+      - 'linux'
+      - 'windows'
+nfpm:
+  vendor: 'Thorben Böhle'
+  description: Generates go code
+#release:
+  # We disable the release as there is no way to disable the creation of
+  # the archive version and we don't want to upload those. We also can
+  # only do one release.
+  #disable: true
+  
