@@ -1,12 +1,12 @@
 /*
-* CODE GENERATED AUTOMATICALLY WITH github.com/ernesto-jimenez/gogen/unmarshalmap
+* CODE GENERATED AUTOMATICALLY WITH github.com/tboehle/gogen/unmarshalmap
 * THIS FILE SHOULD NOT BE EDITED BY HAND
  */
 
 package testpkg
 
 import (
-	test "github.com/ernesto-jimenez/gogen/unmarshalmap/testunmarshalmap"
+	test "github.com/tboehle/gogen/unmarshalmap/testunmarshalmap"
 	"testing"
 )
 

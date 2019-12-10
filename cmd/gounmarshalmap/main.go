@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	// gogen.exe --o "unmarshal.go" --o-test "unmarshal_test.go" --pkg "github.com/tboehle/gogentest" GoGenTester
+	// gounmarshalmap.exe --o "unmarshal.go" --o-test "unmarshal_test.go" SomeStructType
 	out  = flag.String("o", "", "what file to write")
 	tOut = flag.String("o-test", "", "what file to write the test to")
 	pkg  = flag.String("pkg", "", "what package to get the interface from")

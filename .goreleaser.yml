@@ -8,7 +8,6 @@ builds:
   - main: './cmd/gounmarshalmap'
     binary: 'gounmarshalmap'
     goarch:
-      - '386'
       - 'amd64'
     goos:
       - 'linux'
