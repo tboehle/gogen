@@ -22,7 +22,33 @@ type customImporter struct {
 	skipTestFiles bool
 }
 
+type gomoduleImporter struct {
+	imported      map[string]*types.Package
+	base          types.Importer
+	skipTestFiles bool
+}
+
 func (i *customImporter) Import(path string) (*types.Package, error) {
+	var err error
+	if path == "" || path[0] == '.' {
+		path, err = filepath.Abs(filepath.Clean(path))
+		if err != nil {
+			return nil, err
+		}
+		path = gogenutil.StripGopath(path)
+	}
+	if pkg, ok := i.imported[path]; ok {
+		return pkg, nil
+	}
+	pkg, err := i.fsPkg(path)
+	if err != nil {
+		return nil, err
+	}
+	i.imported[path] = pkg
+	return pkg, nil
+}
+
+func (i *gomoduleImporter) Import(path string) (*types.Package, error) {
 	var err error
 	if path == "" || path[0] == '.' {
 		path, err = filepath.Abs(filepath.Clean(path))
@@ -63,14 +89,76 @@ func removeGopath(p string) string {
 }
 
 func (i *customImporter) fsPkg(pkg string) (*types.Package, error) {
-	var err error
-	dir := pkg
-	// GO111MODULE equals off or its on auto, then err != nil -> Use GOPATH
-	if gomodule := os.Getenv("GO111MODULE"); gomodule == "off" {
-		dir, err = gopathDir(pkg)
-	}
+	dir, err := gopathDir(pkg)
 	if err != nil {
 		return importOrErr(i.base, pkg, err)
+	}
+
+	dirFiles, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return importOrErr(i.base, pkg, err)
+	}
+
+	fset := token.NewFileSet()
+	var files []*ast.File
+	for _, fileInfo := range dirFiles {
+		if fileInfo.IsDir() {
+			continue
+		}
+		n := fileInfo.Name()
+		if path.Ext(fileInfo.Name()) != ".go" {
+			continue
+		}
+		if i.skipTestFiles && strings.Contains(fileInfo.Name(), "_test.go") {
+			continue
+		}
+		file := path.Join(dir, n)
+		src, err := ioutil.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+		f, err := parser.ParseFile(fset, file, src, 0)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, f)
+	}
+	conf := types.Config{
+		Importer: i,
+	}
+	p, err := conf.Check(pkg, fset, files, nil)
+
+	if err != nil {
+		return importOrErr(i.base, pkg, err)
+	}
+	return p, nil
+}
+
+func workspaceDir() (string, error) {
+	workspace, dirErr := os.Getwd()
+	if dirErr != nil {
+		return "", fmt.Errorf("Error while getting workspace")
+	}
+	if dir, err := os.Stat(workspace); err == nil && dir.IsDir() {
+		// Prrove if Backslash or Slash
+		return workspace, nil
+	}
+	return "", fmt.Errorf("Workspace is no directory or is not existing")
+}
+
+func (i *gomoduleImporter) fsPkg(pkg string) (*types.Package, error) {
+	var dir, opDir string
+	dir = pkg
+	opDir, err := workspaceDir()
+	if err != nil {
+		return importOrErr(i.base, pkg, err)
+	}
+	// If pkg not equals opDir, it's a module from the gopath
+	if pkg != opDir {
+		dir, err = gopathDir(pkg)
+		if err != nil {
+			return importOrErr(i.base, pkg, err)
+		}
 	}
 
 	dirFiles, err := ioutil.ReadDir(dir)
@@ -127,6 +215,24 @@ func Default() types.Importer {
 		imported:      make(map[string]*types.Package),
 		base:          importer.Default(),
 		skipTestFiles: true,
+	}
+}
+
+// Default returns an importer that will try to import go modules from the gopath and the actual package using go/importer.Default and skipping test files
+func Custom() types.Importer {
+	return &gomoduleImporter{
+		imported:      make(map[string]*types.Package),
+		base:          importer.Default(),
+		skipTestFiles: true,
+	}
+}
+
+// Default returns an importer that will try to import go modules from the gopath and the actual package using go/importer.Default
+func CustomWithTestFile() types.Importer {
+	return &gomoduleImporter{
+		imported:      make(map[string]*types.Package),
+		base:          importer.Default(),
+		skipTestFiles: false,
 	}
 }
 

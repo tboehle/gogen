@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/types"
 	"io"
+	"os"
 	"path/filepath"
 	"text/template"
 
@@ -26,6 +27,7 @@ type Generator struct {
 // NewGenerator initializes a Generator
 func NewGenerator(pkg, target string) (*Generator, error) {
 	var err error
+	var p *types.Package
 	if pkg == "" || pkg[0] == '.' {
 		pkg, err = filepath.Abs(filepath.Clean(pkg))
 		if err != nil {
@@ -33,7 +35,11 @@ func NewGenerator(pkg, target string) (*Generator, error) {
 		}
 		pkg = gogenutil.StripGopath(pkg)
 	}
-	p, err := importer.Default().Import(pkg)
+	if gomodule := os.Getenv("GO111MODULE"); gomodule == "off" {
+		p, err = importer.Default().Import(pkg)
+	} else {
+		p, err = importer.Custom().Import(pkg)
+	}
 	if err != nil {
 		return nil, err
 	}
